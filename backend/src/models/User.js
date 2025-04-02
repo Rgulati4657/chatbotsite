@@ -62,12 +62,12 @@ const userSchema = new mongoose.Schema(
     },
     companyName: { type: String, trim: true },
     // address: { type: String, trim: true },
-    websiteDomain: {
-      type: String,
-      required: true,
-      match: [/^(https?:\/\/)?(www\.)?[\w-]+\.[a-z]{2,}$/, "Invalid website domain"],
-      set: (url) => (url.startsWith("http") ? url : `https://${url}`), // Auto-add https:// if missing
-    },
+    // websiteDomain: {
+    //   type: String,
+    //   required: true,
+    //   match: [/^(https?:\/\/)?(www\.)?[\w-]+\.[a-z]{2,}$/, "Invalid website domain"],
+    //   set: (url) => (url.startsWith("http") ? url : `https://${url}`), // Auto-add https:// if missing
+    // },
     companyAddress: {type: String , required: false , trim: true},
     date: { type: Date, default: Date.now }, // Auto-generated current date
     time: {

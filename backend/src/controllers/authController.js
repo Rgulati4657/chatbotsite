@@ -3,7 +3,7 @@ const User = require('../models/User');
 
 exports.signup = async (req, res,next) => {
   try {
-    const { firstName, lastName, email, password, mobileNo, companyName, companyAddress, websiteDomain, goal } = req.body;   // address, yeh comment kra hai kyunki company address .....
+    const { firstName, lastName, email, password, mobileNo, companyName, companyAddress,goal } = req.body;   //   websiteDomain,     address, yeh comment kra hai kyunki company address .....
 
     // NormalizeEmail (Lowercase)
     const normalizedEmail = email.toLowerCase();
@@ -32,7 +32,7 @@ exports.signup = async (req, res,next) => {
       // address,
       companyName,
       companyAddress,
-      websiteDomain,
+      // websiteDomain,
       goal
     });
 
