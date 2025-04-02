@@ -1,3 +1,9 @@
-exports.home = (req,res)=>{
-    res.send('chatbot backend Running');
-}
+exports.home = (req, res, next) => {
+    try {
+      console.log("Chatbot backend Running");
+      res.send("Chatbot backend Running");
+    } catch (error) {
+      next(error);
+    }
+  };
+  
