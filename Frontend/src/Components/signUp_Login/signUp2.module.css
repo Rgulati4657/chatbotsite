@@ -1,0 +1,78 @@
+.container {
+    width: 40%;
+    margin: auto;
+    padding: 2rem;
+    font-family: Arial, sans-serif;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .formGroup {
+    margin-bottom: 1rem;
+  }
+  
+  .formGroup label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .errorInput {
+    border: 1px solid red;
+  }
+  
+  .error {
+    color: red;
+    font-size: 0.9rem;
+  }
+  
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .goalButton {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .goalButton.selected {
+    background: #007bff;
+    color: white;
+  }
+  
+  .submitButton {
+    width: 100%;
+    padding: 10px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .success {
+    color: green;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+  }
+  
