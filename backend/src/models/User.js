@@ -60,7 +60,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       match: [/^\d{10}$/, "Invalid mobile number (should be 10 digits)"], // Ensure valid 10-digit phone number
     },
-    companyName: { type: String, trim: true },
+    companyName: { type: String, required : false ,trim: true },
     // address: { type: String, trim: true },
     // websiteDomain: {
     //   type: String,
@@ -83,7 +83,7 @@ const userSchema = new mongoose.Schema(
         "Chat with my website visitors",
         "I'm just curious",
       ],
-      required: true,
+      required: false,
     },
   },
   { timestamps: true }
