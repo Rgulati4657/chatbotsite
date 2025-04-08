@@ -4,9 +4,22 @@ import { authActions } from "../../store/authSlice";
 import styles from "./signUpForm.module.css";
 import axios from "axios";
 
+
+const goalOptions = [
+  "Centralize my emails",
+  "Build a chatbot",
+  "Integrate messaging channels",
+  "Chat with my website visitors",
+  "I'm just curious"
+];
+
+
 const SignUpForm = () => {
   const dispatch = useDispatch();
   const { step1Complete, isAuthenticated, error, ...formData } = useSelector((state) => state.auth);
+
+
+  const selectedGoal = useSelector((state) => state.auth.goal);
 
   const [emailPlaceholder, setEmailPlaceholder] = useState("Enter Your Email");
   const [addressPlaceholder, setAddressPlaceholder] = useState("Enter Your Address");
@@ -18,7 +31,9 @@ const SignUpForm = () => {
 
   const handleChange = (e) => {
     dispatch(authActions.signupUpdate({ name: e.target.name, value: e.target.value }));
+    dispatch(authActions.signupValidate({name:e.target.value}))
   };
+  
 
   const handleStep1Submit = (e) => {
     e.preventDefault();
@@ -32,6 +47,8 @@ const SignUpForm = () => {
     
     // Trigger validation for the company info step
     dispatch(authActions.signupValidate({ formType: "company" }));
+
+    console.log('after dispatch', formData);
 
     // If there are no errors, proceed to submit the data to the backend
     if (Object.keys(error).length === 0) {
@@ -202,7 +219,7 @@ const SignUpForm = () => {
                 {error.companyName && <p className={styles.error}>{error.companyName}</p>}
               </div>
 
-              {/* <div className={styles.formGroup}>
+              <div className={styles.formGroup}>
                 <label htmlFor="website">Website Domain</label>
                 <input
                   type="text"
@@ -215,15 +232,22 @@ const SignUpForm = () => {
                   required
                 />
                 {error.website && <p className={styles.error}>{error.website}</p>}
-              </div> */}
+              </div>
 
-              <div className={styles.formGroup}>
+              {/* <div className={styles.formGroup}>
                 <label>Which is your main goal with Crisp?</label>
                 <div className={styles.options}>
-                  {["Centralize my emails", "Build a chatbot", "Integrate messaging channels", "Chat with my website visitors", "I'm just curious"].map((goalOption) => (
+                  {["Centralize my emails",
+                   "Build a chatbot",
+                    "Integrate messaging channels",
+                     "Chat with my website visitors",
+                      "I'm just curious"
+                    ].map((goalOption) => (
                     <button
                       type="button"
                       key={goalOption}
+                      name='goal'
+                      
                       className={`${styles.goalButton} ${formData.goal === goalOption ? styles.selected : ""}`}
                       onClick={() => dispatch(authActions.signupUpdate({ name: "goal", value: goalOption }))}
                     >
@@ -231,7 +255,45 @@ const SignUpForm = () => {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
+
+
+<div className={styles.formGroup}>
+  <label htmlFor="goal">Goal</label>
+  <select
+    id="goal"
+    name="goal"
+    value={formData.goal}
+    onChange={handleChange}
+    className={error.goal ? styles.errorInput : ""}
+    required
+  >
+    <option value="">-- Select your goal --</option>
+    {goalOptions.map((option) => (
+      <option key={option} value={option}>
+        {option}
+      </option>
+    ))}
+  </select>
+  {error.goal && <p className={styles.error}>{error.goal}</p>}
+</div>
+
+
+
+             {/* <div className={styles.formGroup}>
+                <label htmlFor="goal">goal</label>
+                <input
+                  type="button"
+                  id="goal"
+                  name="goal"
+                  placeholder="Enter Your gaol"
+                  value={formData.goal}
+                  onChange={handleChange}
+                  className={error.goal ? styles.errorInput : ""}
+                  required
+              />
+                {error.goal && <p className={styles.error}>{error.goal}</p>}
+              </div> */}
 
               <button type="submit" onClick={handleStep2Submit} className={styles.submitButton}>
                 Discover My Dashboard

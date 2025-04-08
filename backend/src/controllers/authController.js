@@ -3,7 +3,7 @@ const User = require('../models/User');
 
 exports.signup = async (req, res,next) => {
   try {
-    const { firstName, lastName, email, password, mobileNo, companyName, companyAddress,goal } = req.body;   //   websiteDomain,     address, yeh comment kra hai kyunki company address .....
+    const { firstName, lastName, email, password, mobileNo, companyName,  website,companyAddress,goal } = req.body;   //  ,     address, yeh comment kra hai kyunki company address .....
 
     // NormalizeEmail (Lowercase)
     const normalizedEmail = email.toLowerCase();
@@ -19,7 +19,7 @@ exports.signup = async (req, res,next) => {
     }
 
     // Hash password
-    console.log(`FirstName: ${firstName} and Password: ${password} `)
+    console.log(`FirstName: ${firstName} and Password: ${password}`)
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new user
@@ -32,13 +32,14 @@ exports.signup = async (req, res,next) => {
       // address,
       companyName,
       companyAddress,
-      // websiteDomain,
+      website,
       goal
     });
 
     // Save user
     await newUser.save();
-
+    // res.redirect('/home');
+    console.log(`userId: ${newUser._id}, userName : ${newUser.userName}`);
     res.status(201).json({ message: 'User registered successfully', userId: newUser._id, userName : newUser.userName });
 
   } catch (error) {
@@ -76,7 +77,7 @@ exports.loginUser = async (req, res, next) => {
         error.statusCode = 400;
         return next(error);
       }
-  
+      
       res.status(200).json({ message: "Login successful", user });
     } catch (error) {
       console.error("Login Error:", error);
