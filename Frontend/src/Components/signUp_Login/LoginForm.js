@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 // import { authActions } from "../../store/userSlice"; 
 import { loginActions } from "../../store/loginSlice";
 import styles from './LoginForm.module.css';
+import axios from "axios";
 
 const LoginForm = () => {
   const dispatch = useDispatch();
@@ -42,10 +43,23 @@ const LoginForm = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleLoginSubmit = async(e) => {
     e.preventDefault();
     dispatch(loginActions.login(formData));
-    console.log(formData)
+    // console.log(formData)
+
+    if (Object.keys(error).length === 0) {
+        try {
+          // Send data to backend for registration
+          const response = await axios.post("http://localhost:5000/api/auth/login", formData);
+          console.log("Login Success:", response.data);
+          dispatch(loginActions.login(formData)); // Ensure completion of the second step
+        } catch (error) {
+          console.error("Login Error:", error);
+        }
+      } else {
+        console.log("Form has errors", error); // Optionally show the error to the user
+      }
   };
 
   return (
@@ -56,7 +70,7 @@ const LoginForm = () => {
           Don't have an account? <a href="#" className={styles.signupLink}>Sign Up</a>
         </p>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={handleLoginSubmit}>
           <div className={styles.formGroup}>
             <label htmlFor="usernameOrEmail">Username or Email</label>
             <input

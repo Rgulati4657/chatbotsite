@@ -55,8 +55,8 @@ exports.signup = async (req, res,next) => {
 
 exports.loginUser = async (req, res, next) => {
     try {
-      const { emailOrUsername, password } = req.body;
-  
+      const { usernameOrEmail, password } = req.body;
+      emailOrUsername = usernameOrEmail;
       // Find user by email OR username
       const user = await User.findOne({
         $or: [{ email: emailOrUsername.toLowerCase() }, { userName: emailOrUsername }],
@@ -78,7 +78,7 @@ exports.loginUser = async (req, res, next) => {
         return next(error);
       }
       
-      res.status(200).json({ message: "Login successful", user });
+      res.status(200).json({ message: "Login successful ", user });
     } catch (error) {
       console.error("Login Error:", error);
       // res.status(500).json({ message: "Server error" });
