@@ -1,12 +1,26 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { authActions } from "../../store/authSlice";
 import styles from "./signUpForm.module.css";
 import axios from "axios";
 
+
+const goalOptions = [
+  "Centralize my emails",
+  "Build a chatbot",
+  "Integrate messaging channels",
+  "Chat with my website visitors",
+  "I'm just curious"
+];
+
+
 const SignUpForm = () => {
   const dispatch = useDispatch();
+  const navigate= useNavigate()
   const { step1Complete, isAuthenticated, error, ...formData } = useSelector((state) => state.auth);
+
+
 
   const [emailPlaceholder, setEmailPlaceholder] = useState("Enter Your Email");
   const [addressPlaceholder, setAddressPlaceholder] = useState("Enter Your Address");
@@ -18,7 +32,22 @@ const SignUpForm = () => {
 
   const handleChange = (e) => {
     dispatch(authActions.signupUpdate({ name: e.target.name, value: e.target.value }));
+    dispatch(authActions.signupValidate({name:e.target.value}))
   };
+  
+
+  async function validateDomain(domain) {
+    const res = await fetch('/api/domain/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain }),
+    });
+  
+    const data = await res.json();
+    alert(data.message); // Show result
+  }
+
+
 
   const handleStep1Submit = (e) => {
     e.preventDefault();
@@ -33,13 +62,18 @@ const SignUpForm = () => {
     // Trigger validation for the company info step
     dispatch(authActions.signupValidate({ formType: "company" }));
 
+    console.log('after dispatch', formData);
+
     // If there are no errors, proceed to submit the data to the backend
     if (Object.keys(error).length === 0) {
       try {
         // Send data to backend for registration
         const response = await axios.post("http://localhost:5000/api/auth/signup", formData);
         console.log("Registration Success:", response.data);
-        dispatch(authActions.signupValidate({ formType: "company" })); // Ensure completion of the second step
+       navigate('/login')
+        dispatch(authActions.signupValidate({ formType: "company" }));
+     
+         // Ensure completion of the second step
       } catch (error) {
         console.error("Registration Error:", error);
       }
@@ -202,28 +236,45 @@ const SignUpForm = () => {
                 {error.companyName && <p className={styles.error}>{error.companyName}</p>}
               </div>
 
-              {/* <div className={styles.formGroup}>
-                <label htmlFor="website">Website Domain</label>
-                <input
-                  type="text"
-                  id="website"
-                  name="website"
-                  placeholder="www.acme.com"
-                  value={formData.website}
-                  onChange={handleChange}
-                  className={error.website ? styles.errorInput : ""}
-                  required
-                />
-                {error.website && <p className={styles.error}>{error.website}</p>}
-              </div> */}
-
               <div className={styles.formGroup}>
+  <label htmlFor="website">Website Domain</label>
+  <div className={styles.inputWithButton}>
+    <input
+      type="text"
+      id="website"
+      name="website"
+      placeholder="www.acme.com"
+      value={formData.website}
+      onChange={handleChange}
+      className={error.website ? styles.errorInput : ""}
+      required
+    />
+    <button
+      type="button"
+      className={styles.validateButton}
+      onClick={() => validateDomain(formData.website)}
+    >
+      Validate
+    </button>
+  </div>
+  {error.website && <p className={styles.error}>{error.website}</p>}
+</div>
+
+
+              {/* <div className={styles.formGroup}>
                 <label>Which is your main goal with Crisp?</label>
                 <div className={styles.options}>
-                  {["Centralize my emails", "Build a chatbot", "Integrate messaging channels", "Chat with my website visitors", "I'm just curious"].map((goalOption) => (
+                  {["Centralize my emails",
+                   "Build a chatbot",
+                    "Integrate messaging channels",
+                     "Chat with my website visitors",
+                      "I'm just curious"
+                    ].map((goalOption) => (
                     <button
                       type="button"
                       key={goalOption}
+                      name='goal'
+                      
                       className={`${styles.goalButton} ${formData.goal === goalOption ? styles.selected : ""}`}
                       onClick={() => dispatch(authActions.signupUpdate({ name: "goal", value: goalOption }))}
                     >
@@ -231,7 +282,45 @@ const SignUpForm = () => {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
+
+
+<div className={styles.formGroup}>
+  <label htmlFor="goal">Goal</label>
+  <select
+    id="goal"
+    name="goal"
+    value={formData.goal}
+    onChange={handleChange}
+    className={error.goal ? styles.errorInput : ""}
+    required
+  >
+    <option value="">-- Select your goal --</option>
+    {goalOptions.map((option) => (
+      <option key={option} value={option}>
+        {option}
+      </option>
+    ))}
+  </select>
+  {error.goal && <p className={styles.error}>{error.goal}</p>}
+</div>
+
+
+
+             {/* <div className={styles.formGroup}>
+                <label htmlFor="goal">goal</label>
+                <input
+                  type="button"
+                  id="goal"
+                  name="goal"
+                  placeholder="Enter Your gaol"
+                  value={formData.goal}
+                  onChange={handleChange}
+                  className={error.goal ? styles.errorInput : ""}
+                  required
+              />
+                {error.goal && <p className={styles.error}>{error.goal}</p>}
+              </div> */}
 
               <button type="submit" onClick={handleStep2Submit} className={styles.submitButton}>
                 Discover My Dashboard

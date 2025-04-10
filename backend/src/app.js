@@ -3,6 +3,8 @@ const cors = require('cors');
 
 const authRoutes = require('./routes/authRoutes'); // Import Routes
 const generalRoutes = require('./routes/generalRoutes'); // Import Routes
+const chatRoutes = require('./routes/chatRoutes'); // Import Routes
+const domainRoutes = require('./routes/domainRoutes'); // Import Routes
 const errorHandler = require('./middleware/errorMiddleware');
 const app = express();
 
@@ -14,8 +16,12 @@ app.use(express.json());
 
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes); //cred routes
 app.use('/',generalRoutes) // general Routes
+app.use('/api/chat', chatRoutes); // chat routes
+app.use('/api/domain', domainRoutes); // websitedomain route validator
+
+
 
 // Handle unknown routes
 app.use((req, res, next) => {

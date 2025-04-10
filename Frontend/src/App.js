@@ -6,8 +6,10 @@ import { Route, Routes } from "react-router";
 // import SignUp1 from "./Components/signUp_Login/SignUp1";
 // import SignUp2 from "./Components/signUp_Login/signUp2";
 import SignUpForm from "./Components/signUp_Login/signUpForm";
+import LoginForm from "./Components/signUp_Login/LoginForm";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Inbox from "./Components/Dashboard/Inbox";
 
 function App() {
   const [data, setData] = useState("");
@@ -21,7 +23,7 @@ function App() {
       })
       .catch((error) => console.error("Error fetching data:", error));
 
-    console.log(data);
+    console.log("hello",data);
   }, []);
   return (
     <div className="App">
@@ -40,6 +42,8 @@ function App() {
 
       <Routes>
         <Route path="/signup" element={ <SignUpForm />} />
+        <Route path='/login' element={<LoginForm/>} />
+        <Route path="/inbox" element={<Inbox/>} />
           
           {/* <Route path="/" element={<Navbar />} /> */}
           {/* <Route path="/apps" element= */}
