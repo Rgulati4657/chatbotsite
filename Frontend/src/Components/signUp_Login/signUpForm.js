@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { authActions } from "../../store/authSlice";
 import styles from "./signUpForm.module.css";
 import axios from "axios";
@@ -16,10 +17,10 @@ const goalOptions = [
 
 const SignUpForm = () => {
   const dispatch = useDispatch();
+  const navigate= useNavigate()
   const { step1Complete, isAuthenticated, error, ...formData } = useSelector((state) => state.auth);
 
 
-  const selectedGoal = useSelector((state) => state.auth.goal);
 
   const [emailPlaceholder, setEmailPlaceholder] = useState("Enter Your Email");
   const [addressPlaceholder, setAddressPlaceholder] = useState("Enter Your Address");
@@ -34,6 +35,19 @@ const SignUpForm = () => {
     dispatch(authActions.signupValidate({name:e.target.value}))
   };
   
+
+  async function validateDomain(domain) {
+    const res = await fetch('/api/domain/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain }),
+    });
+  
+    const data = await res.json();
+    alert(data.message); // Show result
+  }
+
+
 
   const handleStep1Submit = (e) => {
     e.preventDefault();
@@ -56,7 +70,10 @@ const SignUpForm = () => {
         // Send data to backend for registration
         const response = await axios.post("http://localhost:5000/api/auth/signup", formData);
         console.log("Registration Success:", response.data);
-        dispatch(authActions.signupValidate({ formType: "company" })); // Ensure completion of the second step
+       navigate('/login')
+        dispatch(authActions.signupValidate({ formType: "company" }));
+     
+         // Ensure completion of the second step
       } catch (error) {
         console.error("Registration Error:", error);
       }
@@ -220,19 +237,29 @@ const SignUpForm = () => {
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="website">Website Domain</label>
-                <input
-                  type="text"
-                  id="website"
-                  name="website"
-                  placeholder="www.acme.com"
-                  value={formData.website}
-                  onChange={handleChange}
-                  className={error.website ? styles.errorInput : ""}
-                  required
-                />
-                {error.website && <p className={styles.error}>{error.website}</p>}
-              </div>
+  <label htmlFor="website">Website Domain</label>
+  <div className={styles.inputWithButton}>
+    <input
+      type="text"
+      id="website"
+      name="website"
+      placeholder="www.acme.com"
+      value={formData.website}
+      onChange={handleChange}
+      className={error.website ? styles.errorInput : ""}
+      required
+    />
+    <button
+      type="button"
+      className={styles.validateButton}
+      onClick={() => validateDomain(formData.website)}
+    >
+      Validate
+    </button>
+  </div>
+  {error.website && <p className={styles.error}>{error.website}</p>}
+</div>
+
 
               {/* <div className={styles.formGroup}>
                 <label>Which is your main goal with Crisp?</label>

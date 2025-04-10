@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 // import { authActions } from "../../store/userSlice"; 
 import { loginActions } from "../../store/loginSlice";
 import styles from './LoginForm.module.css';
@@ -7,7 +8,8 @@ import axios from "axios";
 
 const LoginForm = () => {
   const dispatch = useDispatch();
-  const { error, isAuthenticated } = useSelector((state) => state.auth);
+  const navigate= useNavigate();
+  const { error} = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     usernameOrEmail: "",
@@ -17,6 +19,9 @@ const LoginForm = () => {
   const [localError, setLocalError] = useState({
     password: "",
   });
+
+  const [serverMessage, setServerMessage] = useState("");
+const [serverSuccess, setServerSuccess] = useState(null); 
 
   // Handle input change and live password validation
   const handleChange = (e) => {
@@ -43,25 +48,39 @@ const LoginForm = () => {
     }
   };
 
-  const handleLoginSubmit = async(e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    dispatch(loginActions.login(formData));
-    // console.log(formData)
+  
+    try {
+      const response = await axios.post("http://localhost:5000/api/auth/login", formData);
+  
+      if (response.status === 200) {
+        // Login succeeded
+        dispatch(loginActions.login(formData)); 
+        navigate('/inbox')
+        console.log('login successful ' , formData)
 
-    if (Object.keys(error).length === 0) {
-        try {
-          // Send data to backend for registration
-          const response = await axios.post("http://localhost:5000/api/auth/login", formData);
-          console.log("Login Success:", response.data);
-          dispatch(loginActions.login(formData)); // Ensure completion of the second step
-        } catch (error) {
-          console.error("Login Error:", error);
-        }
-      } else {
-        console.log("Form has errors", error); // Optionally show the error to the user
+
+        setServerSuccess(true);
+        setServerMessage("Login successful!");
       }
+    } catch (error) {
+     
+      dispatch(loginActions.login({
+        usernameOrEmail: "invaliduser",
+        password: "wrongpassword"
+      }));
+  
+      setServerSuccess(false);
+  
+      if (error.response && error.response.status === 500) {
+        setServerMessage("Invalid username or password.");
+      } else {
+        setServerMessage("Something went wrong. Please try again.");
+      }
+    }
   };
-
+  
   return (
     <div className={styles.form_main_div}>
       <div className={styles.container}>
@@ -111,7 +130,11 @@ const LoginForm = () => {
             <a href="#">Forgot Password?</a>
           </p>
 
-          {isAuthenticated && <p className={styles.success}>Successfully Logged In!</p>}
+          {serverMessage && (
+  <p className={serverSuccess ? styles.success : styles.error}>
+    {serverMessage}
+  </p>
+)}
         </form>
       </div>
     </div>

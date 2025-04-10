@@ -14,7 +14,7 @@ const loginSlice = createSlice({
   reducers: {
     signup: (state, action) => {
       const { email, password } = action.payload;
-      const username = email.split('@')[0] + Math.floor(Math.random() * 1000); // simple username gen
+      const username = email.split('@')[0] + Math.floor(Math.random() * 1000); 
       state.users.push({ email, username, password });
       state.error = {};
     },
