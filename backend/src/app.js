@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const otpRoutes = require('./routes/otpRoutes');
 
 const authRoutes = require('./routes/authRoutes'); // Import Routes
 const generalRoutes = require('./routes/generalRoutes'); // Import Routes
@@ -20,6 +21,7 @@ app.use('/api/auth', authRoutes); //cred routes
 app.use('/',generalRoutes) // general Routes
 app.use('/api/chat', chatRoutes); // chat routes
 app.use('/api/domain', domainRoutes); // websitedomain route validator
+app.use('/api/otp', otpRoutes); // otp routing
 
 
 
