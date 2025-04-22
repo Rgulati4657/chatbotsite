@@ -1,5 +1,7 @@
 const dotenv = require('dotenv');
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
+const connectDB = require("./src/config/db");
+
 
 const http = require('http');
 const { Server } = require('socket.io');
@@ -13,16 +15,7 @@ dotenv.config();
 
 
 // Database Connection
-mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => {
-    console.error("❌ DB Connection Error:", err.message);
-    process.exit(1); // Exit process if DB fails to connect
-  });
-
-
-
+connectDB();
 
 // Create HTTP server for Socket.IO
 const server = http.createServer(app);

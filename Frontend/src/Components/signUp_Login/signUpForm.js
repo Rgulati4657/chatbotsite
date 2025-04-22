@@ -5,7 +5,6 @@ import { authActions } from "../../store/authSlice";
 import styles from "./signUpForm.module.css";
 import axios from "axios";
 
-
 const goalOptions = [
   "Centralize my emails",
   "Build a chatbot",
@@ -14,16 +13,15 @@ const goalOptions = [
   "I'm just curious"
 ];
 
-
 const SignUpForm = () => {
   const dispatch = useDispatch();
-  const navigate= useNavigate()
+  const navigate = useNavigate();
   const { step1Complete, isAuthenticated, error, ...formData } = useSelector((state) => state.auth);
-
-
 
   const [emailPlaceholder, setEmailPlaceholder] = useState("Enter Your Email");
   const [addressPlaceholder, setAddressPlaceholder] = useState("Enter Your Address");
+  const [isDomainValidated, setIsDomainValidated] = useState(false);
+  const [domainValidationError, setDomainValidationError] = useState("");
 
   const handleSelectOption = (event) => {
     setEmailPlaceholder(`Enter Your ${event.target.value} mail`);
@@ -32,53 +30,64 @@ const SignUpForm = () => {
 
   const handleChange = (e) => {
     dispatch(authActions.signupUpdate({ name: e.target.name, value: e.target.value }));
-    dispatch(authActions.signupValidate({name:e.target.value}))
+    dispatch(authActions.signupValidate({ name: e.target.value }));
+
+    // Reset domain validation if website input is changed
+    if (e.target.name === "website") {
+      setIsDomainValidated(false);
+      setDomainValidationError("");
+    }
   };
-  
 
   async function validateDomain(domain) {
-    const res = await fetch('/api/domain/validate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ domain }),
-    });
-  
-    const data = await res.json();
-    alert(data.message); // Show result
+    try {
+      const res = await fetch("/api/domain/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setIsDomainValidated(true);
+        setDomainValidationError("");
+        alert("Domain is valid!");
+      } else {
+        setIsDomainValidated(false);
+        setDomainValidationError(data.message || "Domain validation failed");
+      }
+    } catch (err) {
+      setIsDomainValidated(false);
+      setDomainValidationError("Error validating domain. Try again.");
+    }
   }
-
-
 
   const handleStep1Submit = (e) => {
     e.preventDefault();
-    // Trigger conditional rendering by updating the step1Complete state
     dispatch(authActions.signupValidate({ formType: "user" }));
   };
 
   const handleStep2Submit = async (e) => {
     e.preventDefault();
-    console.log(formData)
-    
-    // Trigger validation for the company info step
+
+    if (!isDomainValidated) {
+      setDomainValidationError("Please validate your website domain before submitting.");
+      return;
+    }
+
     dispatch(authActions.signupValidate({ formType: "company" }));
 
-    console.log('after dispatch', formData);
-
-    // If there are no errors, proceed to submit the data to the backend
     if (Object.keys(error).length === 0) {
       try {
-        // Send data to backend for registration
         const response = await axios.post("http://localhost:5000/api/auth/signup", formData);
         console.log("Registration Success:", response.data);
-       navigate('/login')
-        dispatch(authActions.signupValidate({ formType: "company" }));
-     
-         // Ensure completion of the second step
+        navigate("/login");
       } catch (error) {
         console.error("Registration Error:", error);
       }
     } else {
-      console.log("Form has errors", error); // Optionally show the error to the user
+      console.log("Form has errors", error);
     }
   };
 
@@ -97,7 +106,6 @@ const SignUpForm = () => {
         )}
 
         <form className={styles.form}>
-          {/* Step 1: User Info */}
           {!step1Complete && (
             <>
               <div className={styles.formGroup}>
@@ -123,7 +131,6 @@ const SignUpForm = () => {
                 {error.firstName && <p className={styles.error}>{error.firstName}</p>}
               </div>
 
-              {/* Other fields for Step 1 */}
               <div className={styles.formGroup}>
                 <label htmlFor="lastName">Last Name</label>
                 <input
@@ -218,7 +225,6 @@ const SignUpForm = () => {
             </>
           )}
 
-          {/* Step 2: Company Info */}
           {step1Complete && (
             <>
               <div className={styles.formGroup}>
@@ -237,90 +243,49 @@ const SignUpForm = () => {
               </div>
 
               <div className={styles.formGroup}>
-  <label htmlFor="website">Website Domain</label>
-  <div className={styles.inputWithButton}>
-    <input
-      type="text"
-      id="website"
-      name="website"
-      placeholder="www.acme.com"
-      value={formData.website}
-      onChange={handleChange}
-      className={error.website ? styles.errorInput : ""}
-      required
-    />
-    <button
-      type="button"
-      className={styles.validateButton}
-      onClick={() => validateDomain(formData.website)}
-    >
-      Validate
-    </button>
-  </div>
-  {error.website && <p className={styles.error}>{error.website}</p>}
-</div>
-
-
-              {/* <div className={styles.formGroup}>
-                <label>Which is your main goal with Crisp?</label>
-                <div className={styles.options}>
-                  {["Centralize my emails",
-                   "Build a chatbot",
-                    "Integrate messaging channels",
-                     "Chat with my website visitors",
-                      "I'm just curious"
-                    ].map((goalOption) => (
-                    <button
-                      type="button"
-                      key={goalOption}
-                      name='goal'
-                      
-                      className={`${styles.goalButton} ${formData.goal === goalOption ? styles.selected : ""}`}
-                      onClick={() => dispatch(authActions.signupUpdate({ name: "goal", value: goalOption }))}
-                    >
-                      {goalOption}
-                    </button>
-                  ))}
+                <label htmlFor="website">Website Domain</label>
+                <div className={styles.inputWithButton}>
+                  <input
+                    type="text"
+                    id="website"
+                    name="website"
+                    placeholder="www.acme.com"
+                    value={formData.website}
+                    onChange={handleChange}
+                    className={error.website ? styles.errorInput : ""}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className={styles.validateButton}
+                    onClick={() => validateDomain(formData.website)}
+                  >
+                    Validate
+                  </button>
                 </div>
-              </div> */}
+                {domainValidationError && <p className={styles.error}>{domainValidationError}</p>}
+                {error.website && <p className={styles.error}>{error.website}</p>}
+              </div>
 
-
-<div className={styles.formGroup}>
-  <label htmlFor="goal">Goal</label>
-  <select
-    id="goal"
-    name="goal"
-    value={formData.goal}
-    onChange={handleChange}
-    className={error.goal ? styles.errorInput : ""}
-    required
-  >
-    <option value="">-- Select your goal --</option>
-    {goalOptions.map((option) => (
-      <option key={option} value={option}>
-        {option}
-      </option>
-    ))}
-  </select>
-  {error.goal && <p className={styles.error}>{error.goal}</p>}
-</div>
-
-
-
-             {/* <div className={styles.formGroup}>
-                <label htmlFor="goal">goal</label>
-                <input
-                  type="button"
+              <div className={styles.formGroup}>
+                <label htmlFor="goal">Goal</label>
+                <select
                   id="goal"
                   name="goal"
-                  placeholder="Enter Your gaol"
                   value={formData.goal}
                   onChange={handleChange}
                   className={error.goal ? styles.errorInput : ""}
                   required
-              />
+                >
+                  <option value="">-- Select your goal --</option>
+                  {goalOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
                 {error.goal && <p className={styles.error}>{error.goal}</p>}
-              </div> */}
+              </div>
 
               <button type="submit" onClick={handleStep2Submit} className={styles.submitButton}>
                 Discover My Dashboard
