@@ -10,6 +10,7 @@ import LoginForm from "./Components/signUp_Login/LoginForm";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Inbox from "./Components/Dashboard/Inbox";
+import ForgotPasswordForm from "./Components/signUp_Login/forgot/ForgotPasswordForm";
 
 function App() {
   const [data, setData] = useState("");
@@ -44,6 +45,8 @@ function App() {
         <Route path="/signup" element={ <SignUpForm />} />
         <Route path='/login' element={<LoginForm/>} />
         <Route path="/inbox" element={<Inbox/>} />
+        <Route path="/forgotpswrd" element={<ForgotPasswordForm/>} /> 
+
           
           {/* <Route path="/" element={<Navbar />} /> */}
           {/* <Route path="/apps" element= */}

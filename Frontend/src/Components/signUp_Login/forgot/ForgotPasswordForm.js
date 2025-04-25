@@ -1,0 +1,149 @@
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { loginActions } from "../../../store/loginSlice";
+import styles from './ForgotPasswordForm.module.css';
+import axios from "axios";
+
+const ForgotPasswordForm = () => {
+  const dispatch = useDispatch();
+  const { forgotError, forgotSuccessMessage, otpVerified, emailForReset, step } = useSelector((state) => state.login);
+
+  const [formData, setFormData] = useState({
+    email: emailForReset || "",
+    otp: "",
+  });
+
+  const [message, setMessage] = useState("");
+
+  // Handle input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Send OTP to backend
+  const sendOtp = async () => {
+    const email = formData.email;
+    try {
+      const response = await axios.post("http://localhost:5000/api/otp/forgot-password", { email });
+      // console.log("Full OTP Response:", response);
+  
+      // Check if the message contains success-related text
+      const success = response?.data?.message === "OTP sent to email";
+  
+      if (success) {
+        dispatch(loginActions.setStep("otp"));
+        dispatch(loginActions.setResetEmail(email));
+        // setMessage("OTP sent to your email!");
+      } else {
+        console.log("Backend response error:", response?.data);
+        setMessage("Failed to send OTP. Try again.");
+      }
+    } catch (err) {
+      console.error("Error sending OTP:", err);
+      setMessage("Invalid email.");
+    }
+  };
+  
+  
+
+  // Verify OTP
+  const verifyOtp = async () => {
+    if (!formData.otp) {
+      setMessage("OTP is required.");
+      return;
+    }
+  
+    try {
+      const response = await axios.post("http://localhost:5000/api/otp/verify-otp", {
+        email: formData.email,
+        otp: formData.otp,
+      });
+  
+      // Log the response to inspect its structure
+      console.log("OTP Verification Response:", response);
+  
+      // Check for success response
+      const success = response?.data?.success === true || response?.data?.success === "true";
+  
+      if (success) {
+        dispatch(loginActions.setOTPVerified(true));
+        setMessage("OTP verified successfully! You can now reset your password.");
+      } else {
+        setMessage("Invalid OTP. Please check and try again.");
+      }
+    } catch (err) {
+      console.error("Error verifying OTP:", err);
+      setMessage("Error occurred during OTP verification. Please try again.");
+    }
+  };
+  
+  
+
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (step === "email") {
+      sendOtp();
+    } else if (step === "otp") {
+      verifyOtp();
+    }
+  };
+
+  return (
+    <div className={styles.form_main_div}>
+      <div className={styles.container}>
+        <h2>Forgot Password</h2>
+        <form onSubmit={handleSubmit}>
+          {step === "email" && (
+            <div className={styles.formGroup}>
+              <label htmlFor="email">Registered Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+          )}
+
+          {step === "otp" && (
+            <div className={styles.formGroup}>
+              <label htmlFor="otp">Enter OTP</label>
+              <input
+                type="text"
+                id="otp"
+                name="otp"
+                value={formData.otp}
+                onChange={handleChange}
+                placeholder="Enter OTP"
+                required
+              />
+            </div>
+          )}
+
+          <button type="submit" className={styles.submitButton}>
+            {step === "otp" ? "Validate OTP" : "Send OTP"}
+          </button>
+
+          {message && <p className={styles.message}>{message}</p>}
+          {forgotError && <p className={styles.error}>{forgotError}</p>}
+          {forgotSuccessMessage && <p className={styles.success}>{forgotSuccessMessage}</p>}
+
+          <p className={styles.forgotPassword}>
+            <Link to="/login" className={styles.a}>Back to Login</Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default ForgotPasswordForm;

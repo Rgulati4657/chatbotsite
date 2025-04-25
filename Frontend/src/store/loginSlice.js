@@ -1,49 +1,58 @@
+
 // src/store/userSlice.js
 import { createSlice } from '@reduxjs/toolkit';
-
 const initialState = {
   users: [],
   currentUser: null,
   error: {},
-  isAuthenticated: false
+  isAuthenticated: false,
+
+  // forgot password
+  emailForReset: "",
+  otpVerified: false,
+  forgotError: null,
+  forgotSuccessMessage: null,
+  step: "email", // ✅ Step added
 };
 
 const loginSlice = createSlice({
   name: 'login',
   initialState,
   reducers: {
-    signup: (state, action) => {
-      const { email, password } = action.payload;
-      const username = email.split('@')[0] + Math.floor(Math.random() * 1000); 
-      state.users.push({ email, username, password });
-      state.error = {};
+    // ... other reducers ...
+    
+    setStep(state, action) {
+      state.step = action.payload;
     },
-    login: (state, action) => {
-      const { usernameOrEmail, password } = action.payload;
-      const foundUser = state.users.find(
-        user =>
-          (user.email === usernameOrEmail || user.username === usernameOrEmail) &&
-          user.password === password
-      );
-      if (foundUser) {
-        state.currentUser = foundUser;
-        state.isAuthenticated = true;
-        state.error = {};
-      } else {
-        state.isAuthenticated = false;
-        state.currentUser = null;
-        state.error = {
-          usernameOrEmail: 'Invalid email or username',
-          password: 'Incorrect password',
-        };
+
+    setResetEmail(state, action) {
+      state.emailForReset = action.payload;
+      state.forgotError = null;
+      state.forgotSuccessMessage = "OTP sent successfully!";
+    },
+
+    setOTPVerified(state, action) {
+      state.otpVerified = action.payload;
+      if (action.payload) {
+        state.forgotSuccessMessage = "OTP verified successfully! You can now reset your password.";
       }
     },
-    logout: (state) => {
-      state.isAuthenticated = false;
-      state.currentUser = null;
+
+    setForgotError(state, action) {
+      state.forgotError = action.payload;
+      state.forgotSuccessMessage = null;
+    },
+
+    clearForgotPasswordState(state) {
+      state.emailForReset = "";
+      state.otpVerified = false;
+      state.forgotError = null;
+      state.forgotSuccessMessage = null;
+      state.step = "email"; // reset step
     },
   },
 });
+
 
 export const loginActions = loginSlice.actions;
 export default loginSlice.reducer;

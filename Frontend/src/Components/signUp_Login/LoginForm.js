@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+import { Link } from "react-router";
 // import { authActions } from "../../store/userSlice"; 
 import { loginActions } from "../../store/loginSlice";
 import styles from './LoginForm.module.css';
@@ -127,7 +128,8 @@ const [serverSuccess, setServerSuccess] = useState(null);
           <button type="submit" className={styles.submitButton}>Login</button>
 
           <p className={styles.forgotPassword}>
-            <a href="#">Forgot Password?</a>
+            {/* <a href="#">Forgot Password?</a> */}
+            <Link to='/forgotpswrd' className={styles.a}>Forgot Password</Link>
           </p>
 
           {serverMessage && (
