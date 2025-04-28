@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginActions } from "../../../store/loginSlice";
 import styles from './ForgotPasswordForm.module.css';
 import axios from "axios";
 
 const ForgotPasswordForm = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { forgotError, forgotSuccessMessage, otpVerified, emailForReset, step } = useSelector((state) => state.login);
 
   const [formData, setFormData] = useState({
@@ -16,7 +17,6 @@ const ForgotPasswordForm = () => {
 
   const [message, setMessage] = useState("");
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -25,20 +25,17 @@ const ForgotPasswordForm = () => {
     }));
   };
 
-  // Send OTP to backend
+  // Send OTP
   const sendOtp = async () => {
     const email = formData.email;
     try {
       const response = await axios.post("http://localhost:5000/api/otp/forgot-password", { email });
-      // console.log("Full OTP Response:", response);
-  
-      // Check if the message contains success-related text
+
       const success = response?.data?.message === "OTP sent to email";
-  
+
       if (success) {
         dispatch(loginActions.setStep("otp"));
         dispatch(loginActions.setResetEmail(email));
-        // setMessage("OTP sent to your email!");
       } else {
         console.log("Backend response error:", response?.data);
         setMessage("Failed to send OTP. Try again.");
@@ -48,8 +45,6 @@ const ForgotPasswordForm = () => {
       setMessage("Invalid email.");
     }
   };
-  
-  
 
   // Verify OTP
   const verifyOtp = async () => {
@@ -57,32 +52,27 @@ const ForgotPasswordForm = () => {
       setMessage("OTP is required.");
       return;
     }
-  
+
     try {
       const response = await axios.post("http://localhost:5000/api/otp/verify-otp", {
         email: formData.email,
-        otp: formData.otp,
+        otp: String(formData.otp),
       });
-  
-      // Log the response to inspect its structure
+
       console.log("OTP Verification Response:", response);
-  
-      // Check for success response
-      const success = response?.data?.success === true || response?.data?.success === "true";
-  
+
+      const success = response?.status === 200 && response?.data?.message === "OTP verified successfully";
+
       if (success) {
         dispatch(loginActions.setOTPVerified(true));
-        setMessage("OTP verified successfully! You can now reset your password.");
       } else {
         setMessage("Invalid OTP. Please check and try again.");
       }
     } catch (err) {
       console.error("Error verifying OTP:", err);
-      setMessage("Error occurred during OTP verification. Please try again.");
+      setMessage("Invalid OTP. Please try again.");
     }
   };
-  
-  
 
   // Handle form submission
   const handleSubmit = (e) => {
@@ -94,26 +84,34 @@ const ForgotPasswordForm = () => {
     }
   };
 
+  // Redirect to reset password if OTP verified
+  useEffect(() => {
+    if (otpVerified) {
+      navigate('/resetpassword');
+    }
+  }, [otpVerified, navigate]);
+
   return (
     <div className={styles.form_main_div}>
       <div className={styles.container}>
         <h2>Forgot Password</h2>
         <form onSubmit={handleSubmit}>
-          {step === "email" && (
-            <div className={styles.formGroup}>
-              <label htmlFor="email">Registered Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-          )}
 
+          <div className={styles.formGroup}>
+            <label htmlFor="email">Registered Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Enter your email"
+              required
+              disabled={step === "otp"} // 🔥 Disable email field in OTP step
+            />
+          </div>
+
+          {/* Only show OTP field if step is otp */}
           {step === "otp" && (
             <div className={styles.formGroup}>
               <label htmlFor="otp">Enter OTP</label>
@@ -140,6 +138,7 @@ const ForgotPasswordForm = () => {
           <p className={styles.forgotPassword}>
             <Link to="/login" className={styles.a}>Back to Login</Link>
           </p>
+
         </form>
       </div>
     </div>
